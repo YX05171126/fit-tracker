@@ -1,0 +1,18 @@
+# FitTracker Deployment
+
+services:
+  - type: web
+    name: fit-tracker
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/server/data
+      sizeGB: 1
+    plan: free
