@@ -103,12 +103,22 @@ export default function FoodScan({ targetMeal, onAddFood, onClose }) {
     if (!videoRef.current || !canvasRef.current) return
     const video = videoRef.current
     const canvas = canvasRef.current
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+    // 缩放到最大 1024px，减少上传数据量（AI 识别不需要全分辨率）
+    const MAX_SIZE = 1024
+    let { videoWidth: w, videoHeight: h } = video
+    if (w > h && w > MAX_SIZE) {
+      h = Math.round(h * MAX_SIZE / w)
+      w = MAX_SIZE
+    } else if (h > MAX_SIZE) {
+      w = Math.round(w * MAX_SIZE / h)
+      h = MAX_SIZE
+    }
+    canvas.width = w
+    canvas.height = h
     const ctx = canvas.getContext('2d')
-    ctx.drawImage(video, 0, 0)
-    // 压缩到约 200KB 以内，平衡质量和速度
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.6)
+    ctx.drawImage(video, 0, 0, w, h)
+    // 压缩质量 — 平衡清晰度和上传速度
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.65)
     setCaptured(dataUrl)
     setError(null)
     // 停止摄像头省电
