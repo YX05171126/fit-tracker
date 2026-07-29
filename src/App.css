@@ -445,6 +445,31 @@ body { overflow-x: hidden; }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+/* ─── Recent Foods ────────────────────── */
+.recent-foods-scroll {
+  display: flex; gap: 8px; overflow-x: auto;
+  padding: 2px 0; -webkit-overflow-scrolling: touch;
+}
+.recent-food-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: #fff;
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+  min-width: 72px;
+}
+.recent-food-chip:active { transform: scale(0.95); border-color: var(--primary); background: #F5FFF5; }
+.recent-food-name {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.recent-food-kcal {
+  font-size: 14px; font-weight: 700; color: var(--primary-dark);
+}
+.recent-food-count {
+  font-size: 10px; color: var(--text-hint);
+  background: var(--bg); padding: 1px 6px; border-radius: 8px;
+}
+
 /* ─── Exercise Items ──────────────────── */
 .exercise-item {
   display: flex;
@@ -662,6 +687,48 @@ body { overflow-x: hidden; }
 .water-btn:active { background: #E3F2FD; border-color: #42A5F5; transform: scale(0.96); }
 .water-btn-icon { font-size: 20px; margin-bottom: 2px; }
 
+/* 8-cup plan */
+.water-cups {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  padding: 8px 0;
+}
+.water-cup {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px; border-radius: var(--radius-sm);
+  background: #f5f5f5; cursor: pointer; transition: all 0.2s;
+  border: 2px solid transparent;
+}
+.water-cup.filled { background: #E3F2FD; border-color: #90CAF9; }
+.water-cup.current { border-color: #42A5F5; background: #F5FAFF; animation: pulse-cup 2s ease-in-out infinite; }
+@keyframes pulse-cup {
+  0%, 100% { border-color: #42A5F5; }
+  50% { border-color: #BBDEFB; }
+}
+.water-cup-icon { font-size: 22px; }
+.water-cup-label { font-size: 10px; color: var(--text-hint); }
+.water-cup.filled .water-cup-label { color: #1E88E5; font-weight: 600; }
+.water-cup.current .water-cup-label { color: #42A5F5; font-weight: 600; }
+.water-cup:active { transform: scale(0.95); }
+.water-cup-ml { font-size: 9px; color: var(--text-hint); font-weight: 500; }
+.water-cup-badge {
+  font-size: 8px; background: #FFF3E0; color: #E65100;
+  padding: 1px 6px; border-radius: 8px; font-weight: 600; margin-top: 2px;
+}
+
+/* ─── Meal Timing ─────────────────────── */
+.meal-timing { display: flex; flex-direction: column; gap: 8px; }
+.meal-timing-slot {
+  padding: 12px 14px; border-radius: var(--radius-sm);
+  border-left: 4px solid var(--border);
+}
+.meal-timing-slot.breakfast { border-color: #FF9800; background: #FFF8F0; }
+.meal-timing-slot.lunch { border-color: #4CAF50; background: #F5FFF5; }
+.meal-timing-slot.dinner { border-color: #2196F3; background: #F5F8FF; }
+.meal-timing-time { font-size: 15px; font-weight: 600; }
+.meal-timing-label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+.meal-timing-desc { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
+.meal-timing-tips { display: flex; flex-direction: column; gap: 6px; }
+
 /* ─── Fasting Timer ──────────────────── */
 .fasting-options { display: flex; flex-direction: column; gap: 8px; }
 .fasting-option {
@@ -841,6 +908,257 @@ body { overflow-x: hidden; }
 .install-banner-text strong { font-size: 13px; color: var(--primary-dark); }
 .install-banner-text span { font-size: 11px; color: var(--text-secondary); }
 .install-banner-arrow { font-size: 18px; color: var(--primary); font-weight: 700; }
+
+/* ─── Food Camera Scanner ─────────────── */
+.scan-overlay {
+  position: fixed; inset: 0; z-index: 300; background: #000;
+  display: flex; flex-direction: column;
+}
+.scan-container {
+  flex: 1; display: flex; flex-direction: column; max-width: 480px;
+  margin: 0 auto; width: 100%; background: #111;
+}
+.scan-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top));
+  background: #000; color: #fff; flex-shrink: 0;
+}
+.scan-close-btn {
+  background: none; border: none; color: #fff; font-size: 22px;
+  cursor: pointer; padding: 4px; width: 40px;
+}
+.scan-info-btn {
+  background: none; border: none; font-size: 20px;
+  cursor: pointer; padding: 4px; width: 40px; opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.scan-info-btn:hover { opacity: 1; }
+.scan-title { font-size: 16px; font-weight: 600; }
+
+/* 拍摄技巧提示条 */
+.scan-tips-bar {
+  display: flex; gap: 8px; padding: 8px 12px;
+  background: rgba(255,255,255,0.06); overflow-x: auto;
+  flex-shrink: 0; -webkit-overflow-scrolling: touch;
+}
+.scan-tip-item {
+  font-size: 11px; color: rgba(255,255,255,0.7); white-space: nowrap;
+  padding: 4px 10px; background: rgba(255,255,255,0.08);
+  border-radius: 12px; flex-shrink: 0;
+}
+
+.scan-camera {
+  flex: 1; position: relative; display: flex; align-items: center;
+  justify-content: center; background: #000; overflow: hidden;
+}
+.scan-video { width: 100%; height: 100%; object-fit: cover; }
+
+/* 取景框 */
+.scan-frame {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.scan-frame-corner {
+  position: absolute; width: 28px; height: 28px;
+  border-color: rgba(255,255,255,0.6);
+  border-style: solid;
+}
+.scan-frame-tl { top: 12%; left: 12%; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+.scan-frame-tr { top: 12%; right: 12%; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+.scan-frame-bl { bottom: 22%; left: 12%; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+.scan-frame-br { bottom: 22%; right: 12%; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+.scan-frame-hint {
+  position: absolute; bottom: 26%; left: 50%; transform: translateX(-50%);
+  font-size: 13px; color: rgba(255,255,255,0.5); font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* 工具栏（翻转、手电筒） */
+.scan-toolbar {
+  position: absolute; top: 12px; right: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.scan-tool-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(0,0,0,0.4); border: none; color: #fff;
+  font-size: 18px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); transition: all 0.2s;
+}
+.scan-tool-btn.active { background: rgba(255,200,0,0.5); }
+.scan-tool-btn:active { transform: scale(0.92); }
+
+/* 拍照按钮 */
+.scan-capture-btn {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  width: 76px; height: 76px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.15); cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  transition: transform 0.15s; backdrop-filter: blur(2px);
+}
+.scan-capture-btn:active { transform: translateX(-50%) scale(0.9); }
+.scan-capture-inner {
+  width: 58px; height: 58px; border-radius: 50%; background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.scan-capture-ring {
+  position: absolute; width: 76px; height: 76px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  animation: capture-pulse 2s ease-in-out infinite;
+}
+@keyframes capture-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.08); opacity: 0; }
+}
+
+.scan-preview { flex: 1; display: flex; flex-direction: column; align-items: center; background: #000; }
+.scan-preview-img { width: 100%; max-height: 60vh; object-fit: contain; }
+.scan-preview-actions {
+  display: flex; gap: 12px; padding: 16px; justify-content: center; background: #000;
+}
+
+/* 错误提示 */
+.scan-error {
+  background: #FFF3E0; color: #E65100; padding: 12px 16px;
+  font-size: 13px; display: flex; align-items: flex-start; gap: 8px;
+}
+.scan-error-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.scan-error-text { line-height: 1.5; }
+
+/* 加载动画 */
+.scan-loading {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 28px 24px; background: #fff; gap: 16px;
+}
+.scan-spinner {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 3px solid #e8e8e8; border-top-color: var(--primary);
+  border-right-color: var(--primary-light);
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.scan-loading-steps {
+  display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 220px;
+}
+.scan-step {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: #ccc; transition: color 0.3s;
+}
+.scan-step.active { color: var(--text); font-weight: 600; }
+.scan-step.done { color: var(--primary-dark); }
+.scan-step-dot { font-size: 14px; width: 22px; text-align: center; }
+.scan-step-text { flex: 1; }
+.scan-retry-hint {
+  font-size: 12px; color: var(--text-hint);
+}
+
+/* 识别结果 */
+.scan-results {
+  background: #fff; padding: 16px; overflow-y: auto;
+  max-height: 55vh;
+}
+.scan-results-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 2px; font-size: 14px; font-weight: 600;
+}
+.scan-results-header-actions { display: flex; gap: 8px; }
+.scan-select-all-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 14px; padding: 4px 14px; font-size: 11px;
+  cursor: pointer; color: var(--text-secondary); transition: all 0.2s;
+}
+.scan-select-all-btn:hover { border-color: var(--primary); color: var(--primary); }
+.scan-confidence-hint {
+  font-size: 11px; color: var(--text-hint); margin-bottom: 10px;
+}
+
+.scan-food-card {
+  display: flex; align-items: center; gap: 10px; padding: 12px;
+  border-radius: var(--radius-sm); margin-bottom: 8px;
+  border: 2px solid #f2f2f2; cursor: pointer; transition: all 0.2s;
+  background: #fafafa;
+}
+.scan-food-card:active { transform: scale(0.98); }
+.scan-food-card.selected { border-color: var(--primary); background: #F5FFF5; box-shadow: 0 0 0 3px rgba(76,175,80,0.1); }
+.scan-food-check { font-size: 22px; width: 28px; text-align: center; }
+.scan-food-info { flex: 1; min-width: 0; }
+.scan-food-name {
+  font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 4px;
+}
+.scan-food-emoji { font-size: 16px; }
+.scan-food-detail { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
+.scan-food-right { text-align: right; flex-shrink: 0; }
+.scan-food-kcal { font-size: 16px; font-weight: 700; color: var(--primary-dark); }
+
+/* 置信度标签 */
+.scan-confidence {
+  font-size: 9px; padding: 1px 6px; border-radius: 8px; font-weight: 600;
+  display: inline-block; margin-top: 2px;
+}
+.scan-conf-high { background: #E8F5E9; color: #2E7D32; }
+.scan-conf-medium { background: #FFF3E0; color: #E65100; }
+.scan-conf-low { background: #FFEBEE; color: #C62828; }
+
+/* 编辑按钮 */
+.scan-edit-btn {
+  background: none; border: none; font-size: 16px; cursor: pointer;
+  padding: 4px 6px; color: var(--text-hint); border-radius: 8px;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.scan-edit-btn:hover { color: var(--primary); background: var(--primary-light); }
+.scan-food-card.editing {
+  border-color: var(--primary); background: #FAFFFA;
+  padding: 14px 12px;
+}
+
+/* 编辑字段 */
+.scan-edit-fields { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.scan-edit-input {
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 13px; outline: none; background: #fff;
+}
+.scan-edit-input:focus { border-color: var(--primary); }
+.scan-edit-name { font-weight: 600; font-size: 14px; }
+.scan-edit-row {
+  display: flex; gap: 6px; align-items: center;
+}
+.scan-edit-row .scan-edit-input { flex: 1; min-width: 0; }
+.scan-edit-unit { font-size: 11px; color: var(--text-hint); white-space: nowrap; }
+
+/* 份数调节行 */
+.scan-portion-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0;
+}
+.scan-portion-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.scan-portion-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid var(--primary); background: #fff;
+  color: var(--primary); font-size: 16px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.scan-portion-btn:active { background: var(--primary-light); }
+.scan-portion-value { font-size: 15px; font-weight: 700; min-width: 24px; text-align: center; }
+.scan-portion-total { font-size: 12px; color: var(--primary-dark); font-weight: 600; }
+.scan-edit-done-btn {
+  margin-left: auto; padding: 4px 12px; border-radius: 14px;
+  border: none; background: var(--primary); color: #fff;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.scan-edit-done-btn:active { background: var(--primary-dark); }
+.scan-food-portions {
+  font-size: 11px; color: var(--primary); font-weight: 600;
+  margin-left: 4px;
+}
+
+/* 空结果 */
+.scan-empty { text-align: center; padding: 24px 16px; }
+.scan-empty-icon { font-size: 48px; display: block; margin-bottom: 8px; }
+.scan-empty-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+.scan-empty-desc {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.8;
+  text-align: left; max-width: 280px; margin: 0 auto;
+}
 
 /* ─── Scrollbar ────────────────────────── */
 ::-webkit-scrollbar { width: 0; height: 0; }

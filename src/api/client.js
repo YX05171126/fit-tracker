@@ -71,4 +71,7 @@ export const api = {
   // Fasting config
   getFastingConfig: () => request('GET', '/fasting-config'),
   saveFastingConfig: (data) => request('PUT', '/fasting-config', data),
+
+  // Food scan
+  scanFood: (imageBase64) => request('POST', '/scan-food', { image: imageBase64 }),
 }

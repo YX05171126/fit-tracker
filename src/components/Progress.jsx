@@ -4,7 +4,7 @@ import { calculateBMI } from '../utils/tdee'
 /**
  * 简易 SVG 折线图
  */
-function SimpleLineChart({ data, width = 320, height = 180, color = '#4CAF50', label = '', unit = '' }) {
+function SimpleLineChart({ data, width = 320, height = 180, color = '#4CAF50', label = '', unit = '', targetLine }) {
   if (!data || data.length < 2) {
     return <div className="chart-empty">数据不足，至少需要2条记录才能生成图表</div>
   }
@@ -41,6 +41,23 @@ function SimpleLineChart({ data, width = 320, height = 180, color = '#4CAF50', l
             fill="#9E9E9E" fontSize="10">{t.val}</text>
         </g>
       ))}
+
+      {/* 目标参考线 */}
+      {targetLine !== undefined && targetLine >= min && targetLine <= max && (
+        <g>
+          <line
+            x1={padding.left} y1={padding.top + h - ((targetLine - min) / range) * h}
+            x2={padding.left + w}  y2={padding.top + h - ((targetLine - min) / range) * h}
+            stroke="#9E9E9E" strokeWidth="1.5" strokeDasharray="6,4"
+          />
+          <text
+            x={padding.left + w} y={padding.top + h - ((targetLine - min) / range) * h - 5}
+            textAnchor="end" fill="#9E9E9E" fontSize="9" fontWeight="600"
+          >
+            目标 {targetLine}
+          </text>
+        </g>
+      )}
 
       {/* X轴标签 */}
       {data.filter((_, i) => i % Math.ceil(data.length / 6) === 0 || i === data.length - 1).map((d, _, arr) => {
@@ -207,7 +224,7 @@ export default function Progress({ weightLogs, foodLogs, tdeeData, addWeight, ad
         <div className="card-title">🔥 热量摄入趋势（14天）</div>
         {calorieData.some(d => d.value > 0) ? (
           <div>
-            <SimpleLineChart data={calorieData} width={320} height={180} color="#FF9800" unit="kcal" />
+            <SimpleLineChart data={calorieData} width={320} height={180} color="#FF9800" unit="kcal" targetLine={tdeeData.targetCalories} />
             {/* 目标线 */}
             <p className="text-hint text-center">橙色线: 每日摄入 · 目标: {tdeeData.targetCalories} kcal（虚线参考）</p>
           </div>

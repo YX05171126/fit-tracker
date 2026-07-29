@@ -257,6 +257,38 @@ export default function Guide({ tdeeData, macros, todayTotals, todayLog, profile
         )}
       </div>
 
+      {/* ── 餐食时间指导 ── */}
+      <div className="card">
+        <div className="card-title">🕗 餐食时间指导</div>
+        <p className="text-hint" style={{ marginBottom: 10 }}>
+          同样的热量，不同时间吃效果不同。进食节律影响胰岛素敏感性、脂肪氧化和代谢率。
+        </p>
+
+        <div className="meal-timing">
+          <div className="meal-timing-slot breakfast">
+            <div className="meal-timing-time">🌅 7:00-9:00</div>
+            <div className="meal-timing-label">早餐 · 全天热量 30%</div>
+            <div className="meal-timing-desc">启动代谢开关，不吃早餐静息代谢低 5-8%</div>
+          </div>
+          <div className="meal-timing-slot lunch">
+            <div className="meal-timing-time">☀️ 11:30-13:30</div>
+            <div className="meal-timing-label">午餐 · 全天热量 40%</div>
+            <div className="meal-timing-desc">一天中最大的一餐，胰岛素敏感性最高时段</div>
+          </div>
+          <div className="meal-timing-slot dinner">
+            <div className="meal-timing-time">🌆 17:30-19:00</div>
+            <div className="meal-timing-label">晚餐 · 全天热量 30%</div>
+            <div className="meal-timing-desc">睡前 3 小时吃完，避免影响生长激素和睡眠</div>
+          </div>
+        </div>
+
+        <div className="meal-timing-tips mt-8">
+          <div className="tip-item">⏰ 三餐间隔 4-5 小时，避免长时间空腹导致的暴食</div>
+          <div className="tip-item">🚫 晚餐后不再进食 — 夜间进食热量转为脂肪的效率高 30%</div>
+          <div className="tip-item">🔥 运动安排在午餐前或下午，餐后 1-2 小时运动最佳</div>
+        </div>
+      </div>
+
       {/* ── 智能菜谱推荐 ── */}
       <div className="card">
         <div className="card-title">🍽️ 智能菜谱推荐</div>

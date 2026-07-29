@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import FOODS, { FOOD_CATEGORIES } from '../data/foodDatabase'
 import EXERCISES, { EXERCISE_CATEGORIES, calcExerciseKcal } from '../data/exerciseDatabase'
+import FoodScan from './FoodScan'
 
 const MEAL_TYPES = [
   { key: 'breakfast', label: '早餐', emoji: '🥐' },
@@ -9,7 +10,7 @@ const MEAL_TYPES = [
   { key: 'snack',     label: '加餐', emoji: '🍪' },
 ]
 
-export default function FoodDiary({ todayLog, onAddFood, onRemoveFood, onAddCustomFood, customFoods, tdeeData, macros, todayTotals, todayExercises, exerciseKcalToday, onAddExercise, onRemoveExercise, profile }) {
+export default function FoodDiary({ todayLog, foodLogs, onAddFood, onRemoveFood, onAddCustomFood, customFoods, tdeeData, macros, todayTotals, todayExercises, exerciseKcalToday, onAddExercise, onRemoveExercise, profile }) {
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCat, setActiveCat] = useState('全部')
@@ -28,7 +29,54 @@ export default function FoodDiary({ todayLog, onAddFood, onRemoveFood, onAddCust
   const [selectedExercise, setSelectedExercise] = useState(null)
   const [exerciseDuration, setExerciseDuration] = useState(30)
 
+  // 拍照识别状态
+  const [showScanner, setShowScanner] = useState(false)
+  const [scannerTargetMeal, setScannerTargetMeal] = useState('lunch')
+
   const allFoods = [...FOODS, ...customFoods]
+
+  // ── 最近常吃（从所有历史记录中提取） ──
+  const recentFoods = useMemo(() => {
+    const foodMap = new Map() // key: food name → { food, lastDate, count, meals }
+    const sortedDates = Object.keys(foodLogs || {}).sort().reverse()
+
+    for (const date of sortedDates) {
+      const day = foodLogs[date]
+      if (!day || !day.meals) continue
+      for (const [mealKey, items] of Object.entries(day.meals)) {
+        for (const item of items) {
+          const key = item.name
+          const existing = foodMap.get(key)
+          if (existing) {
+            existing.count += 1
+            if (date > existing.lastDate) existing.lastDate = date
+            if (!existing.meals.includes(mealKey)) existing.meals.push(mealKey)
+          } else {
+            // 尝试从数据库中匹配完整食物数据
+            const dbMatch = allFoods.find(f => f.name === item.name)
+            foodMap.set(key, {
+              name: item.name,
+              kcal: item.kcal / Math.max(1, item.portions || 1), // 还原为每份热量
+              unit: item.unit || (dbMatch ? dbMatch.unit : '1份'),
+              p: dbMatch ? dbMatch.p : (item.protein / Math.max(1, item.portions || 1)),
+              f: dbMatch ? dbMatch.f : (item.fat / Math.max(1, item.portions || 1)),
+              c: dbMatch ? dbMatch.c : (item.carbs / Math.max(1, item.portions || 1)),
+              cat: dbMatch ? dbMatch.cat : '自定义',
+              id: dbMatch ? dbMatch.id : ('recent_' + item.name),
+              lastDate: date,
+              count: 1,
+              meals: [mealKey],
+            })
+          }
+        }
+      }
+    }
+
+    // 按最后出现日期排序，取前 8 个
+    return Array.from(foodMap.values())
+      .sort((a, b) => b.lastDate.localeCompare(a.lastDate) || b.count - a.count)
+      .slice(0, 8)
+  }, [foodLogs])
 
   // 搜索过滤
   const filteredFoods = allFoods.filter(f => {
@@ -115,7 +163,64 @@ export default function FoodDiary({ todayLog, onAddFood, onRemoveFood, onAddCust
             </div>
           ))}
         </div>
+        <button className="btn btn-outline btn-sm btn-block mt-8"
+          onClick={() => { setScannerTargetMeal('lunch'); setShowScanner(true); }}
+        >
+          📸 拍照识别热量
+        </button>
       </div>
+
+      {/* ── 拍照识别弹窗 ── */}
+      {showScanner && (
+        <FoodScan
+          targetMeal={scannerTargetMeal}
+          onAddFood={onAddFood}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
+      {/* ── 最近常吃 ── */}
+      {recentFoods.length > 0 && (
+        <div className="card">
+          <div className="card-title">🕐 最近常吃</div>
+          <div className="recent-foods-scroll">
+            {recentFoods.map((food, i) => (
+              <button
+                key={food.name + i}
+                className="recent-food-chip"
+                onClick={() => {
+                  // 推测应该加到哪一餐：优先用最常出现的餐次
+                  const mealHint = food.meals[0] || 'lunch'
+                  setTargetMeal(mealHint)
+                  // 如果食物在数据库中有完整数据，用数据库的；否则用还原的数据
+                  const dbFood = allFoods.find(f => f.id === food.id)
+                  if (dbFood) {
+                    setSelectedFood(dbFood)
+                  } else {
+                    setSelectedFood({
+                      id: food.id,
+                      name: food.name,
+                      unit: food.unit,
+                      kcal: food.kcal,
+                      p: food.p,
+                      f: food.f,
+                      c: food.c,
+                      cat: food.cat,
+                    })
+                  }
+                  setPortions(1)
+                  setShowSearch(true)
+                }}
+                title={`${food.name} · ${food.kcal}kcal/份 · 吃过${food.count}次`}
+              >
+                <span className="recent-food-name">{food.name}</span>
+                <span className="recent-food-kcal">{food.kcal} kcal</span>
+                <span className="recent-food-count">×{food.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── 正餐列表 ── */}
       {MEAL_TYPES.map(meal => {

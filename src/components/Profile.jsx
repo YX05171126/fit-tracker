@@ -29,7 +29,7 @@ export default function Profile({ profile, setProfile, tdeeData, macros, onDone,
           <h1 style={{ fontSize: 22 }}>欢迎使用 FitTracker</h1>
           <p>科学减脂助手，基于 Mifflin-St Jeor 公式<br />精准计算你的热量目标和营养素配比</p>
           <ul className="setup-features" style={{ listStyle: 'none' }}>
-            <li>🔬 科学 TDEE 计算（15% 热量缺口）</li>
+            <li>🔬 科学 TDEE 计算（热量缺口可调）</li>
             <li>🍽️ 饮食记录 & 中国食物数据库</li>
             <li>📊 体重/围度追踪 & 趋势图表</li>
             <li>🎯 实时宏量营养素监控</li>
@@ -98,6 +98,30 @@ export default function Profile({ profile, setProfile, tdeeData, macros, onDone,
               <option value="harris">Harris-Benedict（经典）</option>
             </select>
           </div>
+
+          <div className="form-group">
+            <label className="form-label">
+              热量缺口: <strong style={{ color: 'var(--primary-dark)' }}>{form.deficitPercent ?? 15}%</strong>
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="text-hint" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>维持</span>
+              <input
+                type="range"
+                min="0"
+                max="35"
+                step="5"
+                value={form.deficitPercent ?? 15}
+                onChange={e => handleChange('deficitPercent', Number(e.target.value))}
+                style={{ flex: 1, accentColor: 'var(--primary)' }}
+              />
+              <span className="text-hint" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>激进</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+              <span className="text-hint" style={{ fontSize: 10 }}>0% 维持体重</span>
+              <span className="text-hint" style={{ fontSize: 10 }}>15% 推荐减脂</span>
+              <span className="text-hint" style={{ fontSize: 10 }}>35% 激进减脂</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -114,7 +138,7 @@ export default function Profile({ profile, setProfile, tdeeData, macros, onDone,
             <span className="tdee-value">{previewTdee.tdee} kcal</span>
           </div>
           <div className="tdee-row" style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
-            <span className="tdee-label">🎯 目标摄入（15% 缺口）</span>
+            <span className="tdee-label">🎯 目标摄入（{previewTdee.deficitPercent}% 缺口）</span>
             <span className="tdee-value tdee-highlight">{previewTdee.targetCalories} kcal</span>
           </div>
           <div className="tdee-row">

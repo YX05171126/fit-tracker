@@ -76,26 +76,82 @@ export default function Dashboard({
       </div>
 
       {/* ── 饮水追踪 ── */}
+      {/* ── 饮水计划 ── */}
       <div className="card">
-        <div className="card-title">💧 饮水追踪</div>
-        <div className="water-visual">
+        <div className="card-title">💧 饮水计划
+          <span className="text-hint" style={{ fontWeight: 400, marginLeft: 4 }}>
+            （{waterGoal}ml/天 · 体重×33ml）
+          </span>
+        </div>
+
+        {/* 8 杯科学分配 */}
+        <div className="water-cups">
+          {(() => {
+            // 科学分配：总量分8杯，但大小不同 —— 早晨大杯，晚上小杯
+            // 权重: 7:00(1.5) 9:00(1.2) 11:00(1) 13:00(1) 15:00(1) 17:00(1.2) 19:00(0.8) 20:30(0.3)
+            const weights = [1.5, 1.2, 1, 1, 1, 1.2, 0.8, 0.3]
+            const totalWeight = weights.reduce((a,b) => a+b, 0) // = 8
+            const times = ['晨起', '上午', '午前', '午餐', '午后', '运动', '傍晚', '睡前']
+            const hours = [7, 9, 11, 13, 15, 17, 19, 20.5]
+            const currentHour = new Date().getHours() + new Date().getMinutes()/60
+
+            // 计算每杯应喝多少
+            let accWater = 0
+            const cups = weights.map((w, i) => {
+              const cupMl = Math.round(waterGoal * w / totalWeight)
+              accWater += cupMl
+              const filled = todayWater >= accWater
+              const partial = !filled && todayWater > (accWater - cupMl)
+                ? Math.round((todayWater - (accWater - cupMl)) / cupMl * 100)
+                : 0
+              const isCurrent = !filled && currentHour >= hours[i] && (i === 7 || currentHour < hours[i+1])
+              const isPast = currentHour >= hours[i]
+              // 运动后：如果今天有运动且是运动时段，给额外提示
+              const isExerciseSlot = i === 5 && exerciseKcalToday > 0
+              return { cupMl, filled, partial, isCurrent, isPast, isExerciseSlot, hour: hours[i], time: times[i] }
+            })
+
+            return cups.map((cup, i) => (
+              <div key={i}
+                className={`water-cup ${cup.filled ? 'filled' : ''} ${cup.isCurrent && !cup.filled ? 'current' : ''}`}
+                title={`${cup.time} · ${cup.isExerciseSlot ? '运动后补水！' : ''} · ${cup.cupMl}ml · ${cup.filled ? '✅' : cup.isPast ? '该喝了' : '待喝'}`}
+                onClick={() => { if (!cup.filled) onAddWater(cup.cupMl) }}
+              >
+                <div className="water-cup-icon">
+                  {cup.filled ? '💧' : cup.partial > 0 ? '💦' : cup.isExerciseSlot ? '🏃' : '○'}
+                </div>
+                <div className="water-cup-label">{cup.time}</div>
+                <div className="water-cup-ml">
+                  {cup.filled ? `${cup.cupMl}ml` : `${cup.cupMl}ml`}
+                </div>
+                {cup.isExerciseSlot && exerciseKcalToday > 0 && !cup.filled && (
+                  <div className="water-cup-badge">+补水</div>
+                )}
+              </div>
+            ))
+          })()}
+        </div>
+
+        {/* 进度条 */}
+        <div className="water-visual mt-8">
           <div className="water-progress-bar">
-            <div className="water-progress-fill" style={{ width: `${waterPct}%` }} />
+            <div className="water-progress-fill" style={{ width: `${waterPct}%`, background: waterPct >= 100 ? 'linear-gradient(90deg, #66BB6A, #43A047)' : undefined }} />
           </div>
           <div className="water-stats">
             <span className="water-amount">{todayWater} ml</span>
             <span className="water-goal">/ {waterGoal} ml</span>
-            <span className="water-glasses">（约 {waterGlasses} 杯）</span>
+            <span className="water-glasses">（{waterPct}%）</span>
           </div>
         </div>
-        {waterRemaining > 0 && (
+
+        {waterRemaining > 0 ? (
           <p className="text-hint text-center" style={{ marginTop: 4 }}>
-            还需 {waterRemaining} ml 达标
+            还需 {waterRemaining} ml · 点击上方待喝杯子快速记录
           </p>
-        )}
-        {waterPct >= 100 && (
+        ) : (
           <p className="text-success text-center" style={{ marginTop: 4, fontWeight: 600 }}>🎉 今日饮水达标！</p>
         )}
+
         <div className="water-buttons mt-8">
           {WATER_PRESETS.map(p => (
             <button key={p.ml} className="water-btn" onClick={() => onAddWater(p.ml)}>

@@ -65,14 +65,17 @@ export function calculateTDEE(profile) {
 
   const activity = ACTIVITY_LEVELS.find(a => a.key === activityLevel) || ACTIVITY_LEVELS[0]
   const tdee = Math.round(bmr * activity.factor)
-  const deficit = 0.15 // 15% 热量缺口
+
+  // 用户可调热量缺口，默认 15%
+  const deficitPercent = profile.deficitPercent ?? 15
+  const deficit = deficitPercent / 100
   const targetCalories = Math.round(tdee * (1 - deficit))
 
   return {
     bmr: Math.round(bmr),
     tdee,
     targetCalories,
-    deficitPercent: 15,
+    deficitPercent,
     deficitKcal: tdee - targetCalories,
     activityLabel: activity.label,
     formulaLabel: formula === 'katch' ? 'Katch-McArdle' : formula === 'harris' ? 'Harris-Benedict' : 'Mifflin-St Jeor',

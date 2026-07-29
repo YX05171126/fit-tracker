@@ -26,6 +26,7 @@ const DEFAULT_PROFILE = {
   activityLevel: 'sedentary',
   bodyFatPct: '',
   formula: 'mifflin',
+  deficitPercent: 15, // 默认 15% 热量缺口
 }
 
 // 生成今天的日期 key
@@ -76,7 +77,7 @@ export default function App() {
 
   // ─── 今日饮水 ──────────────────────────────
   const todayWater = waterLogs[today] || 0
-  const waterGoal = profile.waterGoal || 2000
+  const waterGoal = profile.waterGoal || Math.round(profile.weightKg * 33)
 
   const addWater = (ml) => {
     setWaterLogs(prev => ({
@@ -261,6 +262,7 @@ export default function App() {
         {activeTab === 'diary' && (
           <FoodDiary
             todayLog={todayLog}
+            foodLogs={foodLogs}
             onAddFood={addFood}
             onRemoveFood={removeFood}
             onAddCustomFood={addCustomFood}
