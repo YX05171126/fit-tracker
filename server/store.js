@@ -14,6 +14,20 @@ const USERS_FILE = path.join(DATA_DIR, 'users.json')
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
 if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, '[]')
 
+// 迁移：为已有用户添加 role 字段（首个用户为 admin）
+function migrateUsers() {
+  const users = getUsers()
+  let changed = false
+  for (const u of users) {
+    if (!u.role) {
+      u.role = (users.indexOf(u) === 0) ? 'admin' : 'user'
+      changed = true
+    }
+  }
+  if (changed) saveUsers(users)
+}
+migrateUsers()
+
 // ─── 用户管理 ────────────────────────────────
 
 function getUsers() {
@@ -32,12 +46,19 @@ export function findUserById(id) {
   return getUsers().find(u => u.id === id)
 }
 
+export function isAdmin(userId) {
+  const user = findUserById(userId)
+  return user && user.role === 'admin'
+}
+
 export function createUser(username, passwordHash) {
   const users = getUsers()
+  const isFirstUser = users.length === 0
   const user = {
     id: 'u_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
     username,
     passwordHash,
+    role: isFirstUser ? 'admin' : 'user',
     createdAt: new Date().toISOString(),
   }
   users.push(user)

@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
           if (data.waterLogs) localStorage.setItem('ft_water_logs', JSON.stringify(data.waterLogs))
           if (data.fastingConfig) localStorage.setItem('ft_fasting_config', JSON.stringify(data.fastingConfig))
           localStorage.setItem('ft_setup_done', 'true')
-          setUser({ username: '已登录用户' }) // 服务端不返回 username（login/register 会返回）
+          setUser(data.user || { username: '用户' })
           setLoading(false)
         })
         .catch(() => {

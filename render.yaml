@@ -15,4 +15,4 @@ services:
       name: data
       mountPath: /opt/render/project/src/server/data
       sizeGB: 1
-    plan: free
+    plan: starter

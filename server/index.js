@@ -7,8 +7,8 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import bcrypt from 'bcryptjs'
-import { findUserByUsername, createUser, getUserData, setUserData, getUserArray, setUserArray } from './store.js'
-import { signToken, authMiddleware } from './auth.js'
+import { findUserByUsername, findUserById, createUser, getUserData, setUserData, getUserArray, setUserArray } from './store.js'
+import { signToken, authMiddleware, adminMiddleware } from './auth.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -16,6 +16,12 @@ app.use(express.json())
 
 const PORT = process.env.PORT || 3001
 const DIST_DIR = path.join(__dirname, '..', 'dist')
+
+// 生产环境安全检查
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('❌ FATAL: JWT_SECRET 环境变量未设置，服务器拒绝启动')
+  process.exit(1)
+}
 
 // ─── 静态文件 (前端 build) ──────────────────
 app.use(express.static(DIST_DIR, {
@@ -141,7 +147,9 @@ app.put('/api/fasting-config', authMiddleware, (req, res) => {
 // ─── Sync ────────────────────────────────────
 app.get('/api/sync', authMiddleware, (req, res) => {
   try {
+    const user = findUserById(req.userId)
     const data = {
+      user: user ? { id: user.id, username: user.username } : null,
       profile: getUserData(req.userId, 'profile.json'),
       foodLogs: getUserData(req.userId, 'food_logs.json'),
       exerciseLogs: getUserData(req.userId, 'exercise_logs.json'),
@@ -187,8 +195,8 @@ function extractJSON(text) {
     const parsed = tryParse(arrMatch[0])
     if (parsed) return parsed
   }
-  // 3. 尝试匹配 JSON 对象（单个食物）
-  const objMatch = text.match(/\{[\s\S]*\}/)
+  // 3. 尝试匹配 JSON 对象（单个食物，非贪婪避免跨对象匹配）
+  const objMatch = text.match(/\{[\s\S]*?\}/)
   if (objMatch) {
     const parsed = tryParse(objMatch[0])
     if (parsed && !Array.isArray(parsed)) return [parsed]
@@ -357,7 +365,7 @@ app.post('/api/scan-food', authMiddleware, async (req, res) => {
 
 // ─── Admin: 后台数据概览 ─────────────────────
 // 浏览器访问 /api/admin 查看所有用户数据
-app.get('/api/admin', authMiddleware, (req, res) => {
+app.get('/api/admin', adminMiddleware, (req, res) => {
   try {
     const dataDir = path.join(__dirname, 'data')
     const users = JSON.parse(fs.readFileSync(path.join(dataDir, 'users.json'), 'utf-8'))

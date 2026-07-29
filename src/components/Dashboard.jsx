@@ -48,6 +48,8 @@ export default function Dashboard({
 
   // ─── 断食计时器 ───
   const [fastingSetup, setFastingSetup] = useState(false)
+  const [fastingStartTime, setFastingStartTime] = useState('12:00')
+  const [selectedProtocol, setSelectedProtocol] = useState('16:8')
 
   return (
     <div>
@@ -183,8 +185,9 @@ export default function Dashboard({
               <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>选择断食方案</p>
               <div className="fasting-options">
                 {FASTING_PROTOCOLS.map(p => (
-                  <div key={p.key} className="fasting-option"
-                    onClick={() => { onSetFastingConfig({ protocol: p.key, fastH: p.fastH, eatH: p.eatH, eatingStart: '12:00' }); setFastingSetup(false); }}
+                  <div key={p.key}
+                    className={`fasting-option ${selectedProtocol === p.key ? 'selected' : ''}`}
+                    onClick={() => setSelectedProtocol(p.key)}
                   >
                     <div className="fasting-option-header">
                       <span className="fasting-option-label">{p.label}</span>
@@ -195,16 +198,13 @@ export default function Dashboard({
                 ))}
                 <div style={{ marginTop: 8 }}>
                   <label className="form-label">进食窗口开始时间</label>
-                  <input className="form-input" type="time" defaultValue="12:00"
+                  <input className="form-input" type="time" value={fastingStartTime}
                     style={{ width: '100%', marginTop: 4 }}
-                    id="fastingStartInput"
+                    onChange={e => setFastingStartTime(e.target.value)}
                   />
                   <button className="btn btn-primary btn-sm btn-block mt-8" onClick={() => {
-                    const timeEl = document.getElementById('fastingStartInput')
-                    const startTime = timeEl ? timeEl.value : '12:00'
-                    const sel = document.querySelector('.fasting-option.selected') || FASTING_PROTOCOLS[0]
-                    // default to 16:8
-                    onSetFastingConfig({ protocol: '16:8', fastH: 16, eatH: 8, eatingStart: startTime })
+                    const proto = FASTING_PROTOCOLS.find(p => p.key === selectedProtocol) || FASTING_PROTOCOLS[0]
+                    onSetFastingConfig({ protocol: proto.key, fastH: proto.fastH, eatH: proto.eatH, eatingStart: fastingStartTime })
                     setFastingSetup(false)
                   }}>确认</button>
                 </div>
@@ -301,11 +301,7 @@ function FastingTimerCard({ config, onReset }) {
     inEatingWindow = currentMin >= eatingStartMin && currentMin < eatingEndMin
   }
 
-  const timeLeftMin = inEatingWindow
-    ? eatingEndMin - currentMin + (eatingEndMin < currentMin ? 0 : 0) // time left in eating window
-    : (eatingStartMin - currentMin + (currentMin > eatingStartMin ? 1440 : 0)) // time until next eating window
-
-  // Need to handle the wrap-around case properly
+  // 计算剩余/等待时间
   let displayMin
   if (inEatingWindow) {
     if (eatingEndMin > 1440) {
@@ -321,14 +317,6 @@ function FastingTimerCard({ config, onReset }) {
 
   const hoursLeft = Math.floor(displayMin / 60)
   const minsLeft = displayMin % 60
-
-  // 进度百分比
-  const totalWindowMin = config.eatH * 60
-  let progressPct = 50
-  if (inEatingWindow) {
-    const elapsedEatingMin = eatingStartMin > 1440 ? 0 : Math.max(0, currentMin - eatingStartMin)
-    progressPct = Math.min(100, Math.round(elapsedEatingMin / totalWindowMin * 100))
-  }
 
   return (
     <div className="card">
