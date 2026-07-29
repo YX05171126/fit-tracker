@@ -16,10 +16,23 @@
   <body>
     <div id="root"></div>
     <script>
-      // 注册 Service Worker
-      if ('serviceWorker' in navigator) {
+      // ── Service Worker 自愈 ──
+      (async function() {
+        if (!('serviceWorker' in navigator)) return
+        try {
+          // 检查是否存在旧版本 SW
+          const regs = await navigator.serviceWorker.getRegistrations()
+          if (regs.length > 0) {
+            // 删除所有旧 SW
+            await Promise.all(regs.map(r => r.unregister()))
+            // 清除所有缓存
+            const keys = await caches.keys()
+            await Promise.all(keys.map(k => caches.delete(k)))
+          }
+        } catch(_) {}
+        // 注册新版 SW
         navigator.serviceWorker.register('/sw.js')
-      }
+      })()
     </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
