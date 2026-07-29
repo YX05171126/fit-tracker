@@ -23,6 +23,12 @@ app.use(express.static(DIST_DIR, {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.js')) res.setHeader('Content-Type', 'application/javascript')
     if (filePath.endsWith('.css')) res.setHeader('Content-Type', 'text/css')
+    if (filePath.endsWith('.html')) {
+      // index.html 不缓存，确保更新后立即生效
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+      res.setHeader('Pragma', 'no-cache')
+      res.setHeader('Expires', '0')
+    }
   },
 }))
 
