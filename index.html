@@ -16,9 +16,14 @@
   <body>
     <div id="root"></div>
     <script>
-      // PWA Service Worker — 简洁注册，不反复卸载
+      // PWA Service Worker — 先清理旧版(v3)再注册新版(v4)
+      // v3 的 clients.claim() 会在页面渲染中途抢夺控制权导致白屏
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          return Promise.all(regs.map(r => r.unregister()))
+        }).finally(() => {
+          navigator.serviceWorker.register('/sw.js')
+        })
       }
     </script>
     <script type="module" src="/src/main.jsx"></script>
