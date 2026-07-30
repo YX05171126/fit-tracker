@@ -14,16 +14,35 @@
     <title>FitTracker - 科学减脂助手</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div style="display:flex;align-items:center;justify-content:center;min-height:100dvh;font-family:sans-serif;color:#888;font-size:14px">⏳ 加载中...</div></div>
     <script>
-      // PWA Service Worker — 先清理旧版(v3)再注册新版(v4)
-      // v3 的 clients.claim() 会在页面渲染中途抢夺控制权导致白屏
+      // ── 版本化自动清理 ──
+      // 升级 APP_VERSION 可触发自动清除旧数据，解决本地状态污染导致的白屏
+      var APP_VERSION = 'v4'
+      var storedVersion = null
+      try { storedVersion = localStorage.getItem('ft_app_version') } catch(_) {}
+
+      if (storedVersion !== APP_VERSION) {
+        // 新版本或首次访问：清除所有旧数据和旧 SW
+        try { localStorage.clear() } catch(_) {}
+        try { localStorage.setItem('ft_app_version', APP_VERSION) } catch(_) {}
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            return Promise.all(regs.map(function(r) { return r.unregister() }))
+          }).catch(function() {}).then(function() {
+            // 清除缓存
+            if ('caches' in window) {
+              caches.keys().then(function(keys) {
+                return Promise.all(keys.map(function(k) { return caches.delete(k) }))
+              }).catch(function() {})
+            }
+          })
+        }
+      }
+
+      // 注册 Service Worker (v4 — 无 clients.claim)
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(regs => {
-          return Promise.all(regs.map(r => r.unregister()))
-        }).finally(() => {
-          navigator.serviceWorker.register('/sw.js')
-        })
+        navigator.serviceWorker.register('/sw.js')
       }
     </script>
     <script type="module" src="/src/main.jsx"></script>
