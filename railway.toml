@@ -1,0 +1,14 @@
+# FitTracker — Railway 部署配置
+# 文档: https://docs.railway.com/reference/config-as-code
+
+[build]
+  builder = "nixpacks"
+  buildCommand = "npm install"
+  # dist/ 已预构建并提交到 git，build 脚本跳过 vite build
+
+[deploy]
+  startCommand = "node server/index.js"
+  healthcheckPath = "/api/health"
+  # 健康检查间隔 15s，超时 5s
+  healthcheckTimeout = 5
+  restartPolicyType = "ON_FAILURE"

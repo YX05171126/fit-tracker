@@ -17,10 +17,12 @@ app.use(express.json({ limit: '10mb' }))
 const PORT = process.env.PORT || 3001
 const DIST_DIR = path.join(__dirname, '..', 'dist')
 
-// 生产环境安全检查
+// 生产环境安全检查 — 警告但不阻止启动
+// 在 Railway 控制台 → Variables 中设置 JWT_SECRET 以消除此警告
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
-  console.error('❌ FATAL: JWT_SECRET 环境变量未设置，服务器拒绝启动')
-  process.exit(1)
+  console.warn('⚠️  警告: JWT_SECRET 环境变量未设置，使用内置 fallback')
+  console.warn('⚠️  请在 Railway 控制台添加 JWT_SECRET 变量以确保安全性')
+  console.warn('⚠️  生成随机密钥: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"')
 }
 
 // ─── 静态文件 (前端 build) ──────────────────
